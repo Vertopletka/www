@@ -3,7 +3,7 @@ import csv
 from flask import Flask, render_template, request, redirect, url_for
 from werkzeug.utils import secure_filename
 
-# 1. Инициализация приложения (ВАЖНО: выше всех роутов)
+# 1. Инициализация приложения
 app = Flask(__name__)
 
 # 2. Конфигурация
@@ -31,7 +31,7 @@ def load_from_csv():
         with open('data.csv', 'r', encoding='utf-8') as f:
             reader = csv.reader(f)
             for row in reader:
-                if len(row) == 2:  # Проверка, что в строке есть и название, и путь
+                if len(row) == 2:
                     properties.append({'title': row[0], 'image': row[1]})
     return properties
 
@@ -52,7 +52,6 @@ def add_property():
         file = request.files.get('file')
 
         if file and title:
-            # Безопасно сохраняем файл (Критерий: Загрузка файлов)
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
