@@ -1,0 +1,27 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/">MyRent</a>
+        <a href="/add" class="btn btn-outline-light btn-sm">Добавить жилье</a>
+    </div>
+</nav>
+
+<div class="container">
+    <h2 class="mb-4">Доступные варианты</h2>
+
+    <div class="row">
+        {% for house in houses %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <img src="{{ house.image }}" class="card-img-top" alt="house">
+                <div class="card-body">
+                    <h5 class="card-title">{{ house.title }}</h5>
+                    <p class="card-text text-muted">{{ house.desc }}</p>
+                    <h6 class="text-primary fw-bold">{{ house.price }}</h6>
+                    <a href="#" class="btn btn-outline-primary w-100 mt-3">Забронировать</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
