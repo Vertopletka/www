@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stalcraft Barter | База Знаний</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --card-bg: #111111;
+            --border-color: #333;
+            --accent-green: #4ade80;
+            --line-color: #444;
+            --node-dot: #555;
+            --rarity-white: #ffffff;
+            --rarity-green: #4ade80;
+            --rarity-blue: #3b82f6;
+            --rarity-purple: #a855f7;
+            --rarity-red: #ff4444;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: #eee;
+            padding: 40px 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .barter-container {
+            overflow-x: auto;
+            padding-bottom: 100px;
+        }
+        .branch-section {
+            margin-bottom: 60px;
+            min-width: fit-content;
+        }
+        .barter-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .barter-row {
+            display: flex;
+            align-items: center;
+            height: 220px;
+        }
+        .item-node {
+            width: 200px;
+            position: relative;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+        .connector {
+            width: 80px;
+            height: 100%;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .item-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s ease-in-out;
+            margin: 0 auto;
+        }
+        .item-card:hover {
+            transform: translateY(-5px);
+            border-color: #555;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .item-card.empty { visibility: hidden; }
+        .img-box {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 70%);
+        }
+        .rarity-white .img-box { background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0) 70%); }
+        .rarity-green .img-box { background: radial-gradient(circle, rgba(74, 222, 128, 0.12) 0%, rgba(0,0,0,0) 70%); }
+        .rarity-blue .img-box { background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(0,0,0,0) 70%); }
+        .rarity-purple .img-box { background: radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, rgba(0,0,0,0) 70%); }
+        .rarity-red .img-box { background: radial-gradient(circle, rgba(255, 68, 68, 0.12) 0%, rgba(0,0,0,0) 70%); }
+        .img-box img { max-width: 100%; max-height: 100%; object-fit: contain; position: relative; z-index: 2; }
+        .line-h {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--line-color);
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+        .line-h::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            background: var(--node-dot);
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        .line-h.no-dot::after { display: none; }
+        .line-v {
+            position: absolute;
+            left: 50%;
+            width: 2px;
+            background: var(--line-color);
+            z-index: 1;
+            transform: translateX(-50%);
+        }
+        .v-down { top: 50%; height: 51%; }
+        .v-up { top: -2px; height: 52%; }
+        .v-full { top: -2px; height: 102%; }
+        .rarity-white { border-top: 4px solid var(--rarity-white); }
+        .rarity-green { border-top: 4px solid var(--rarity-green); }
+        .rarity-blue { border-top: 4px solid var(--rarity-blue); }
+        .rarity-purple { border-top: 4px solid var(--rarity-purple); }
+        .rarity-red { border-top: 4px solid var(--rarity-red); }
+        .text-rarity-white { color: var(--rarity-white); }
+        .text-rarity-green { color: var(--rarity-green); }
+        .text-rarity-blue { color: var(--rarity-blue); }
+        .text-rarity-purple { color: var(--rarity-purple); }
+        .text-rarity-red { color: var(--rarity-red); }
+        .item-name { font-size: 12px; font-weight: 800; text-transform: uppercase; margin: 10px 0; line-height: 1.2; }
+        .btn-check-res {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #888;
+            font-size: 10px;
+            padding: 6px;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+        .btn-check-res:hover { background: var(--accent-green); color: #000; border-color: var(--accent-green); }
+        .modal-content { background: #111; border: 1px solid #333; color: white; border-radius: 0; }
+        .res-line { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; }
+        .text-label-gray { color: #aaa; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark mb-4" style="background: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold text-uppercase" href="/" style="color: var(--accent-green); letter-spacing: 2px;">
+            Stalcraft <span class="text-white">DB</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+           <ul class="navbar-nav ms-auto align-items-center">
+    {% if current_user.is_authenticated %}
+        <li class="nav-item me-3">
+            <span class="text-white small fw-bold text-uppercase">{{ current_user.username }}</span>
+        </li>
+        <li class="nav-item me-3">
+            <img src="{{ url_for('static', filename='avatars/' + current_user.avatar) }}"
+                 alt="Profile" class="rounded-circle border border-secondary"
+                 style="width: 35px; height: 35px; object-fit: cover;">
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-uppercase fw-bold" href="/logout" style="font-size: 12px; color: #ff4444;">Выйти</a>
+        </li>
+    {% else %}
+        <li class="nav-item">
+            <a class="nav-link text-uppercase fw-bold" href="/login" style="font-size: 12px; letter-spacing: 1px;">Войти</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-uppercase fw-bold" href="/register" style="font-size: 12px; letter-spacing: 1px; color: var(--accent-green);">Регистрация</a>
+        </li>
+    {% endif %}
+</ul>
+        </div>
+    </div>
+</nav>
+    <div class="barter-container container-fluid">
+        {% for branch in branches %}
+        <div class="branch-section">
+            <div class="barter-grid">
+                {% set rows_list = branch.rows %}
+                {% for row in rows_list %}
+                    {% set row_idx = loop.index0 %}
+                    <div class="barter-row">
+                        {% for item in row %}
+                            {% set col_idx = loop.index0 %}
+                            <div class="item-node">
+                                {% if item %}
+                                    <div class="item-card rarity-{{ item.rarity }}">
+                                        <div class="img-box">
+                                            <img src="{{ url_for('static', filename='img/' + item.image) }}" alt="">
+                                        </div>
+                                        <div class="item-name text-rarity-{{ item.rarity }}">{{ item.name }}</div>
+                                        <button class="btn btn-check-res fw-bold" data-bs-toggle="modal" data-bs-target="#m{{ item.id }}">
+                                            РЕСУРСЫ
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <div class="item-card empty"></div>
+                                {% endif %}
+                            </div>
+                            <div class="connector">
+                                {% if item %}
+                                    {% set has_next = false %}
+                                    {% for next_item in row[col_idx + 1:] %}
+                                        {% if next_item %}{% set has_next = true %}{% endif %}
+                                    {% endfor %}
+                                    {% if has_next %}
+                                        <div class="line-h"></div>
+                                    {% endif %}
+                                    {% set has_below = false %}
+                                    {% for next_row in rows_list[row_idx + 1:] %}
+                                        {% if next_row[col_idx] %}{% set has_below = true %}{% endif %}
+                                    {% endfor %}
+                                    {% if has_below %}
+                                        <div class="line-v v-down"></div>
+                                    {% endif %}
+                                    {% set has_above = false %}
+                                    {% for prev_row in rows_list[:row_idx] %}
+                                        {% if prev_row[col_idx] %}{% set has_above = true %}{% endif %}
+                                    {% endfor %}
+                                    {% if has_above %}
+                                        <div class="line-v v-up"></div>
+                                        <div class="line-h no-dot" style="width: 50%; left: 50%;"></div>
+                                    {% endif %}
+                                {% else %}
+                                    {% set has_above = false %}
+                                    {% set has_below = false %}
+                                    {% for prev_row in rows_list[:row_idx] %}
+                                        {% if prev_row[col_idx] %}{% set has_above = true %}{% endif %}
+                                    {% endfor %}
+                                    {% for next_row in rows_list[row_idx + 1:] %}
+                                        {% if next_row[col_idx] %}{% set has_below = true %}{% endif %}
+                                    {% endfor %}
+                                    {% if has_above and has_below %}
+                                        <div class="line-v v-full"></div>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            {% if item %}
+                            <div class="modal fade" id="m{{ item.id }}" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content p-3">
+                                        <div class="modal-header border-0">
+                                            <h5 class="modal-title text-rarity-{{ item.rarity }} fw-bold">{{ item.name }}</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            {% for req in item.requirements %}
+                                            <div class="res-line">
+                                                <span style="color: #aaa;">{{ req.resource_name }}</span>
+                                                <span class="text-success fw-bold">{{ "{:,}".format(req.amount).replace(",", " ") }}</span>
+                                            </div>
+                                            {% endfor %}
+                                            <div class="mt-4 text-end pt-3 border-top border-secondary">
+                                                <span class="text-label-gray">Цена сборки: </span>
+                                                <span class="text-warning fw-bold fs-4">{{ "{:,}".format(item.price).replace(",", " ") }} ₽</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
